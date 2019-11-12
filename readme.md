@@ -45,7 +45,7 @@ The following python snippet can be useful. Suppose you have all variables each 
 
     ./cens_tau
 
-<script id="asciicast-OHsWi1RysfiDEXtJjJMfYKL1B" src="https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B.js" async></script>
+[![asciicast](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B.svg)](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B)
 
 If you want to test this code with artificial data, first run `gendata.py` which will generate a mock dataset in the file `test01.dat` where X and Y both are correlated with Z.
 
