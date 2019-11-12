@@ -48,3 +48,9 @@ The following python snippet can be useful. Suppose you have all variables each 
 <script id="asciicast-OHsWi1RysfiDEXtJjJMfYKL1B" src="https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B.js" async></script>
 
 If you want to test this code with artificial data, first run `gendata.py` which will generate a mock dataset in the file `test01.dat` where X and Y both are correlated with Z.
+
+# Citation
+
+If you use this code in your work and it gets published, you are morally obliged to cite the original paper: ['A test for partial correlation with censored astronomical data'](https://ui.adsabs.harvard.edu/abs/1996MNRAS.278..919A/abstract), Akritas & Siebert, MNRAS, 278, 919 (1996). 
+
+I also ask you to cite [Nemmen, R. et al. *Science*, 2012, 338, 1445](http://labs.adsabs.harvard.edu/adsabs/abs/2012Sci...338.1445N/) ([bibtex citation info](http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode=2012Sci...338.1445N&data_type=BIBTEX&db_key=AST&nocookieset=1)) as one of the examples of application of the this test. I spent some time improving this code, so I would appreciate your citation of [my paper](http://labs.adsabs.harvard.edu/adsabs/abs/2012Sci...338.1445N/) as a token of gratitute. Thanks! 🙂
