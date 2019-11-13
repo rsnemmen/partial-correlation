@@ -35,7 +35,7 @@ col1 col2 col3 col4 col5 col6
 - X: independent variable
 - Y: dependent variable 
 - Z: test variable
-- censX, censY, censZ: integer which is 1 if censX/censY/censZ is a detection or 0 if it is an upper limit
+- censX, censY, censZ: integer which is 1 if X/Y/Z is a detection or 0 if it is an upper limit
 
 The following python snippet can be useful. Suppose you have all variables each stored in a numpy array. To create an ASCII file with the appropriate structure to be processed by `cens_tau`, issue the following command:
 
