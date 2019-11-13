@@ -39,7 +39,12 @@ col1 col2 col3 col4 col5 col6
 
 The following python snippet can be useful. Suppose you have all variables each stored in a numpy array. To create an ASCII file with the appropriate structure to be processed by `cens_tau`, issue the following command:
 
-    numpy.savetxt(fileout, transpose((X,censX,Y,censY,Z,censZ)), fmt='%10.4f %i %10.4f %i %10.4f %i')
+```python
+# "censored tag" array if all your data points are detections
+censX=numpy.ones_like(X,dtype=numpy.int)
+
+numpy.savetxt(fileout, transpose((X,censX,Y,censY,Z,censZ)), fmt='%10.4f %i %10.4f %i %10.4f %i')
+```
 
 2.. Run the test
 
