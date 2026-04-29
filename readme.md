@@ -1,97 +1,170 @@
-PARTIAL CORRELATION COEFFICIENT AND SIGNIFICANCE FOR CENSORED DATA
-=======================================
+# Partial correlation coefficient and significance for censored data
 
-The code is based on the methodology presented in ['A test for partial correlation with censored astronomical data'](https://ui.adsabs.harvard.edu/abs/1996MNRAS.278..919A/abstract), Akritas & Siebert, MNRAS, 278, 919 (1996).
+This repository contains a Fortran implementation of the partial Kendall tau test from [Akritas & Siebert (1996), *A test for partial correlation with censored astronomical data*](https://ui.adsabs.harvard.edu/abs/1996MNRAS.278..919A/abstract).
 
-# What is this for? 
+Use it when two variables appear correlated, but both may be driven by a third variable. A common astronomy example is checking whether two luminosities are still correlated after controlling for distance or redshift.
 
-The idea here is suppose you have measurements for two variables, X and Y. X and Y correlate well with each other. However, they mutually correlate with a third variable Z, which you have also measured. How can you be sure that the correlation you see between X and Y is not actually driven by Z? 
+## What the program reports
 
-One important astronomical example is when you are studying the correlation between luminosities at different bands—say X-rays and radio—for a sample of sources. The "hidden variable" Z in this case is the luminosity distance dL, which you used to convert from fluxes to luminosities. 
+The program computes:
 
-This statistical test quantifies the p-value for the null hypothesis Pnull of no correlation between X and Y taking into account the effect of Z. If Pnull is high, then your X-Y correlation is caused by both variables depending on Z.
+- the three pairwise Kendall tau values `Tau(1,2)`, `Tau(1,3)`, and `Tau(2,3)`
+- the partial Kendall tau between `X` and `Y` after controlling for `Z`
+- a variance term, a significance statement, and the probability of the null hypothesis that the partial correlation is zero
 
-# Installation
+The significance output is the paper's asymptotic normal approximation, so it is most trustworthy for larger samples.
 
-Make sure you have a fortran (sorry) compiler such as `gfortran` or `pgfortran`. This code was originally written in 1995, so be understanding.
+## Build and quickstart
 
-Compile it with the command
-
-    gfortran -O cens_tau.f -o cens_tau
-
-or, with the repository `Makefile`,
-
-    make
-
-The legacy wrapper script still works too:
-
-    ./make.sh
-
-# Usage
-
-For an automated regression test, build the executable and run it against the bundled sample fixture:
+You need a Fortran compiler such as `gfortran`.
 
 ```sh
-make test
+make
 ```
 
-This runs two shell-based regression checks:
+Common commands:
 
-- the bundled sample fixture in `data/test01.dat`, compared against `data/test01.txt`
-- the Merloni et al. (2003) Table 1 dump in `data/merloni2003.dat`, normalized on the fly and checked against the current fiducial output for the first Table 2 setup
+| Command | What it does |
+| --- | --- |
+| `make` | Build `./cens_tau` |
+| `make sample` | Run the bundled sample fixture in `data/test01.dat` |
+| `make summary` | Print only the stable summary lines from the sample run |
+| `make test` | Run the regression checks |
+| `make gendata` | Regenerate `data/test01.dat` with synthetic data |
+| `./make.sh` | Legacy build wrapper; still supported |
 
-The Merloni regression uses `tests/prepare_merloni2003_row1.py` to strip repeated headers and notes, convert the raw table into the six-column `cens_tau` format for `(Log L_R, Log L_X, Log10 D)`, verify that the result is stable even if rows sharing the same distance are reordered, and then compare the output to the repository's current fiducial result for that normalized fixture.
-
-If you only want the stable summary lines from a live sample run, use:
+For a first run:
 
 ```sh
+make
 make summary
 ```
 
-If you want the full sample output instead, run:
+If you want the full sample output instead:
 
 ```sh
 make sample
 ```
 
-1.. Put your data in an ASCII file with the following structure (no need for the first line of cols in the file OK?):
+## Walkthrough: run the test on your own data
 
+If you already have a dataset and want to apply the partial correlation test, this is the shortest reliable path.
+
+### 1. Prepare a six-column ASCII file
+
+Your input file must be plain text, whitespace-delimited, and have exactly six columns in this order:
+
+```text
+X censX Y censY Z censZ
 ```
-col1 col2 col3 col4 col5 col6
- X  censX  Y  censY Z  censZ  
+
+This line shows the required column order only. Do **not** include it as a header row in the file.
+
+Column meanings:
+
+- `X`: independent variable
+- `Y`: dependent variable
+- `Z`: control/test variable
+- `censX`, `censY`, `censZ`: censor flags, where `1` means a detection and `0` means an upper limit
+
+Rules the program enforces:
+
+- no header row
+- no comment lines
+- no extra columns
+- at least 4 data rows
+- at most 500 data rows
+- malformed rows or invalid censor flags stop the program with an error
+
+Example:
+
+```text
+26.9800 1 44.4340 0 -1.0714 1
+27.1200 1 44.9010 1 -0.9500 1
+26.4000 0 44.1000 1 -1.2200 1
 ```
 
-- X: independent variable
-- Y: dependent variable 
-- Z: test variable
-- censX, censY, censZ: integer which is 1 if X/Y/Z is a detection or 0 if it is an upper limit
-- the program expects exactly these six whitespace-delimited fields per row
-- no header row, comment lines, or extra trailing columns are supported
-- files with malformed rows, invalid censor flags, or zero data rows now stop immediately with an error message
-- the program requires at least 4 data rows to compute the reported variance and significance
-- the current storage limit is 500 rows
-
-The following python snippet can be useful. Suppose you have all variables each stored in a numpy array. To create an ASCII file with the appropriate structure to be processed by `cens_tau`, issue the following command:
+If all of your points are detections, the censor arrays are just all ones. For example, with NumPy:
 
 ```python
-# "censored tag" array if all your data points are detections
-censX=numpy.ones_like(X,dtype=int)
+import numpy
 
-numpy.savetxt(fileout, transpose((X,censX,Y,censY,Z,censZ)), fmt='%10.4f %i %10.4f %i %10.4f %i')
+censX = numpy.ones_like(X, dtype=int)
+censY = numpy.ones_like(Y, dtype=int)
+censZ = numpy.ones_like(Z, dtype=int)
+
+numpy.savetxt(
+    fileout,
+    numpy.column_stack((X, censX, Y, censY, Z, censZ)),
+    fmt="%10.4f %i %10.4f %i %10.4f %i",
+)
 ```
 
-2.. Run the test
+### 2. Build the executable
 
-    ./cens_tau
+```sh
+make
+```
 
-[![asciicast](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B.svg)](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B)
+### 3. Run the program on your file
 
-If you want to generate a fresh artificial dataset, run `make gendata` (or `python gendata.py` directly; requires NumPy). It writes a mock dataset to `data/test01.dat` where X and Y are both correlated with Z, overwriting the bundled sample fixture.
+The program is interactive: it asks for the input filename on standard input. You can either type the filename after starting it:
 
-The current automated fixture in `data/test01.dat` contains detections only (`censX = censY = censZ = 1` throughout), so it is useful for baseline regressions but does not yet exercise the upper-limit branches of the censored-data algorithm.
+```sh
+./cens_tau
+```
 
-# Citation
+or automate the prompt by piping the filename:
 
-If you use this code in your work and it gets published, you are morally obliged to cite the original paper: ['A test for partial correlation with censored astronomical data'](https://ui.adsabs.harvard.edu/abs/1996MNRAS.278..919A/abstract), Akritas & Siebert, MNRAS, 278, 919 (1996). 
+```sh
+printf '%s\n' 'path/to/your-data.dat' | ./cens_tau
+```
 
-I also ask you to cite [Nemmen, R. et al. *Science*, 2012, 338, 1445](http://labs.adsabs.harvard.edu/adsabs/abs/2012Sci...338.1445N/) ([bibtex citation info](http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode=2012Sci...338.1445N&data_type=BIBTEX&db_key=AST&nocookieset=1)) as one of the examples of application of the this test. I spent some time improving this code, so I would appreciate your citation of [my paper](http://labs.adsabs.harvard.edu/adsabs/abs/2012Sci...338.1445N/) as a token of gratitute. Thanks! 🙂
+### 4. Read the key output lines
+
+The most important lines are:
+
+- `--> Partial Kendalls tau:`: the partial correlation between `X` and `Y` after controlling for `Z`
+- `Probability of null hypothesis`: the reported p-value-like probability for zero partial correlation
+- `Zero partial correlation rejected at level ...`: a significance summary derived from the asymptotic test
+
+For scripted runs, this command keeps just the stable summary lines:
+
+```sh
+printf '%s\n' 'path/to/your-data.dat' | ./cens_tau | grep -E 'Tau\(|Partial Kendalls tau|Square root of variance|Zero partial correlation|Probability of null hypothesis'
+```
+
+## Input and interpretation notes
+
+- Variable roles are positional. The program does not infer them from names or headers.
+- The code negates all three numeric columns internally to convert astronomy's usual left-censored upper limits into the right-censoring convention used by the statistical derivation. Do **not** negate your data before writing the file.
+- If you work in log space, take logarithms first and then write those logged values to the input file. The program handles the internal sign flip itself.
+- The bundled regression fixture `data/test01.dat` is useful for baseline checks, but it contains detections only and does not exercise the upper-limit branches of the censored-data algorithm.
+
+## Regression checks and fixtures
+
+`make test` currently runs two checks:
+
+1. the bundled fixture `data/test01.dat`, compared against `data/test01.txt`
+2. a normalized fixture derived from `data/merloni2003.dat`, checked against the repository's current fiducial output for the first Table 2 setup
+
+If you only want to inspect the stable summary values from the bundled sample fixture:
+
+```sh
+make summary
+```
+
+If you want to regenerate the synthetic sample fixture, run:
+
+```sh
+make gendata
+```
+
+This overwrites `data/test01.dat`.
+
+## Citation
+
+If you use this code in published work, please cite the following papers:
+
+- [Akritas & Siebert (1996), *A test for partial correlation with censored astronomical data*](https://ui.adsabs.harvard.edu/abs/1996MNRAS.278..919A/abstract)
+- [Nemmen et al. (2012), *Science*, 338, 1445](http://labs.adsabs.harvard.edu/adsabs/abs/2012Sci...338.1445N/)

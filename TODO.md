@@ -1,3 +1,3 @@
 - [x] create automated tests
 - [ ] port fortran core to python
-- [ ] improve README with a full walkthrough example
+- [x] improve README with a full walkthrough example
