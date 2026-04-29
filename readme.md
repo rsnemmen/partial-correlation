@@ -21,13 +21,7 @@ The reported significance is the paper's asymptotic normal approximation, so it 
 From the repository root, install the required Python dependencies:
 
 ```sh
-python -m pip install numpy scipy
-```
-
-If you want an optional progress bar for long runs, install `tqdm` as well:
-
-```sh
-python -m pip install tqdm
+pip install numpy scipy tqdm
 ```
 
 Run the bundled sample fixture with the Python CLI:
