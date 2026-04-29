@@ -2,12 +2,12 @@
 
 ## Build, test, and lint commands
 
-- **Build the Fortran executable:** `./make.sh`
+- **Build the Fortran executable:** `make`
 - **Direct build equivalent:** `gfortran -O cens_tau.f -o cens_tau`
 - **Run the main sample regression:** `printf 'test01.dat\n' | ./cens_tau`
 - **Run a lightweight single-check regression:** `printf 'test01.dat\n' | ./cens_tau | grep -E 'Partial Kendalls tau|Zero partial correlation'`
 - **Inspect the stable summary lines from the sample regression:** `printf 'test01.dat\n' | ./cens_tau | grep -E 'Tau\\(|Partial Kendalls tau|Square root of variance|Zero partial correlation|Probability of null hypothesis'`
-- **Generate a fresh synthetic dataset:** `python gendata.py`
+- **Generate a fresh synthetic dataset:** `make gendata`
 - **Linting:** no linter is configured in this repository.
 
 There is no automated multi-test suite in this repository. `test01.dat` and `test01.txt` are the closest thing to a regression fixture, but exact prompt text, spacing, and floating-point formatting can vary by compiler/runtime. Prefer checking the reported tau values and significance message over requiring a byte-for-byte match.

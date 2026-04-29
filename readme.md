@@ -18,8 +18,12 @@ Make sure you have a fortran (sorry) compiler such as `gfortran` or `pgfortran`.
 Compile it with the command
 
     gfortran -O cens_tau.f -o cens_tau
-    
-or by running
+
+or, with the repository `Makefile`,
+
+    make
+
+The legacy wrapper script still works too:
 
     ./make.sh
 
@@ -28,11 +32,16 @@ or by running
 For a reproducible smoke test, build the executable and run it against the bundled sample file:
 
 ```sh
-./make.sh
-printf 'test01.dat\n' | ./cens_tau
+make test
 ```
 
-This should print the three pairwise Kendall tau values, the partial Kendall tau, and the null-hypothesis significance summary.
+This should print the three pairwise Kendall tau values, the partial Kendall tau, the null-hypothesis significance summary, and only the stable summary lines from the sample run.
+
+If you want the full sample output instead, run:
+
+```sh
+make sample
+```
 
 1.. Put your data in an ASCII file with the following structure (no need for the first line of cols in the file OK?):
 
@@ -61,7 +70,7 @@ numpy.savetxt(fileout, transpose((X,censX,Y,censY,Z,censZ)), fmt='%10.4f %i %10.
 
 [![asciicast](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B.svg)](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B)
 
-If you want to generate a fresh artificial dataset, run `python gendata.py` (requires NumPy). It writes a mock dataset to `test01.dat` where X and Y are both correlated with Z, overwriting the bundled sample file.
+If you want to generate a fresh artificial dataset, run `make gendata` (or `python gendata.py` directly; requires NumPy). It writes a mock dataset to `test01.dat` where X and Y are both correlated with Z, overwriting the bundled sample file.
 
 # Citation
 
