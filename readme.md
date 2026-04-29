@@ -193,46 +193,32 @@ If `path` is omitted, the CLI reads a single path from standard input.
 - If you work in log space, take logarithms first and then write those logged values to the input file. The implementation handles the internal sign flip itself.
 - The bundled sample fixture `data/test01.dat` is useful for baseline checks, but it contains detections only and does not exercise the upper-limit branches of the censored-data algorithm by itself.
 
-## Useful commands on this branch
+## Useful commands
 
 | Command | What it does |
 | --- | --- |
 | `python -m partial_correlation data/test01.dat` | Run the Python CLI on the bundled sample |
 | `make python-sample` | Run the Python CLI on `data/test01.dat` |
-| `make python-summary` | Print only the stable Python summary lines |
-| `make python-test` | Run the pytest-based Python regressions |
-| `make test` | Run the full regression suite |
+| `make python-summary` | Print only the stable summary lines |
+| `make test` | Run the full pytest regression suite |
 | `make gendata` | Regenerate `data/test01.dat` with synthetic data |
-| `make` | Build the bundled Fortran reference executable |
-| `make sample` | Run the bundled sample through `./cens_tau` |
-| `make summary` | Print only the stable Fortran summary lines |
 
-## Fortran reference and the `legacy` branch
+## Original Fortran source
 
-This branch still ships the original `cens_tau.f` program and keeps it in the regression suite for parity with the Python port.
-
-If you specifically want the original **Fortran-first** experience, including the older build/run workflow and README structure, use the `legacy` branch instead:
+The original Fortran program (`cens_tau.f`) is preserved on the `legacy` branch and at the `fortran-final` tag:
 
 ```sh
 git switch legacy
+# or
+git checkout fortran-final
 ```
-
-or browse that branch on GitHub.
 
 ## Regression checks and fixtures
 
-`make test` runs four checks:
+`make test` runs two pytest suites:
 
-1. the bundled fixture `data/test01.dat`, compared against `data/test01.txt` by the legacy Fortran shell regression
-2. a normalized fixture derived from `data/merloni2003.dat`, checked against the repository's current fiducial output for the first Table 2 setup by the legacy Fortran shell regression
-3. the Python CLI regressions under `pytest`, covering the bundled and normalized fixtures plus stdin-path handling
-4. the Python library/API regressions under `pytest`
-
-If you only want the Python-side automated checks, run:
-
-```sh
-make python-test
-```
+1. the Python CLI regressions, covering the bundled sample fixture, the Merloni 2003 dataset (upper-limit branches), and stdin-path handling
+2. the Python library/API regressions for all three entry points
 
 If you want to inspect the stable summary values from the bundled sample fixture:
 

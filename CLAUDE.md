@@ -4,21 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo does
 
-Python implementation of the partial Kendall tau test for censored data (Akritas & Siebert 1996), used in astronomy to check if two variables remain correlated after controlling for a third (e.g., controlling for distance/redshift). The Fortran binary `cens_tau` is kept only as a regression reference.
+Python implementation of the partial Kendall tau test for censored data (Akritas & Siebert 1996), used in astronomy to check if two variables remain correlated after controlling for a third (e.g., controlling for distance/redshift). The original Fortran source is preserved on the `legacy` branch and at the `fortran-final` tag.
 
 ## Commands
 
 ```sh
-# Build Fortran reference binary
-make
-# or directly:
-gfortran -O cens_tau.f -o cens_tau
-
-# Run tests (Fortran shell regressions + pytest)
+# Run tests (pytest)
 make test
-
-# Run only Python/pytest tests
-make python-test
 
 # Run a single pytest file
 python -m pytest tests/test_python_api.py
@@ -50,9 +42,9 @@ All logic lives in `partial_correlation/core.py`. The package exports everything
 **Public API surface** (three entry points for different input shapes):
 - `partial_kendall_tau(x, cens_x, y, cens_y, z, cens_z)` — separate 1-D arrays
 - `partial_kendall_tau_table(values, censoring)` — `(n, 3)` arrays
-- `partial_kendall_tau_from_file(path)` — file path; subject to `max_rows=500` cap (matches the Fortran COMMON-block limit; in-memory functions have no cap)
+- `partial_kendall_tau_from_file(path)` — file path; subject to `max_rows=500` cap (matches the original Fortran COMMON-block limit; in-memory functions have no cap)
 
-**CLI** is `partial_correlation/__main__.py`, which calls `main()` from `core.py`. If no path argument is given, one line is read from stdin (legacy Fortran behavior).
+**CLI** is `partial_correlation/__main__.py`, which calls `main()` from `core.py`. If no path argument is given, one line is read from stdin (legacy behavior).
 
 ## Input file format
 
@@ -61,11 +53,10 @@ Six whitespace-delimited columns, no header: `X censX Y censY Z censZ`. Censor f
 ## Tests
 
 - `tests/test_python_api.py` — unit/regression tests for all three API entry points
-- `tests/test_python_cli.py` — CLI subprocess tests
-- `tests/test_test01.sh`, `tests/test_merloni2003_table2_row1.sh` — Fortran shell regressions comparing stdout against fixture files
-- `tests/pytest_helpers.py` — shared fixture path constant `FIXTURE`
+- `tests/test_python_cli.py` — CLI subprocess tests covering the bundled fixture, the Merloni 2003 dataset (upper-limit branches), and stdin-path handling
+- `tests/pytest_helpers.py` — shared helpers and fixture path constants
 - `data/test01.dat` — bundled 50-row all-detections sample (`censX = censY = censZ = 1` throughout); does **not** exercise upper-limit branches. Regenerate with `make gendata`. `gendata.py` produces a synthetic dataset where the X-Y correlation is entirely driven by Z.
-- `data/merloni2003.dat` — Merloni 2003 dataset; the `test_merloni2003_table2_row1` regression covers the censored-data (upper-limit) branches that `test01.dat` misses.
+- `data/merloni2003.dat` — Merloni 2003 dataset; `test_python_cli.py::test_python_cli_matches_merloni_regression` covers the censored-data (upper-limit) branches that `test01.dat` misses.
 
 ## Statistical caveat
 

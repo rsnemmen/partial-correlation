@@ -1,5 +1,5 @@
 """
-Generates mock data sets for partial correlation analysis with cens_tau.f.
+Generates mock data sets for partial correlation analysis.
 """
 
 import os
