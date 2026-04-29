@@ -25,6 +25,15 @@ or by running
 
 # Usage
 
+For a reproducible smoke test, build the executable and run it against the bundled sample file:
+
+```sh
+./make.sh
+printf 'test01.dat\n' | ./cens_tau
+```
+
+This should print the three pairwise Kendall tau values, the partial Kendall tau, and the null-hypothesis significance summary.
+
 1.. Put your data in an ASCII file with the following structure (no need for the first line of cols in the file OK?):
 
 ```
@@ -41,7 +50,7 @@ The following python snippet can be useful. Suppose you have all variables each 
 
 ```python
 # "censored tag" array if all your data points are detections
-censX=numpy.ones_like(X,dtype=numpy.int)
+censX=numpy.ones_like(X,dtype=int)
 
 numpy.savetxt(fileout, transpose((X,censX,Y,censY,Z,censZ)), fmt='%10.4f %i %10.4f %i %10.4f %i')
 ```
@@ -52,7 +61,7 @@ numpy.savetxt(fileout, transpose((X,censX,Y,censY,Z,censZ)), fmt='%10.4f %i %10.
 
 [![asciicast](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B.svg)](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B)
 
-If you want to test this code with artificial data, first run `gendata.py` which will generate a mock dataset in the file `test01.dat` where X and Y both are correlated with Z.
+If you want to generate a fresh artificial dataset, run `python gendata.py` (requires NumPy). It writes a mock dataset to `test01.dat` where X and Y are both correlated with Z, overwriting the bundled sample file.
 
 # Citation
 

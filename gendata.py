@@ -18,7 +18,7 @@ noisex=numpy.random.normal(size=z.size)
 noisey=numpy.random.normal(size=z.size)
 x=z+10.+noisex
 y=5.*z+3.+noisey
-cens=numpy.ones(x.size,dtype=numpy.int)
+cens=numpy.ones(x.size,dtype=int)
 
 # Exports to a data file
 numpy.savetxt('test01.dat',numpy.transpose((x,cens,y,cens,z,cens)),fmt='%10.4f %i %10.4f %i %10.4f %i')
