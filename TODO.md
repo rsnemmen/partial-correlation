@@ -1,3 +1,5 @@
 - [x] create automated tests
-- [ ] port fortran core to python
+- [x] port fortran core to python
 - [x] improve README with a full walkthrough example
+- [x] tests with pytest
+- [ ] why python code so slow? progress bar?
