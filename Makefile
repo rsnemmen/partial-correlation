@@ -27,7 +27,12 @@ summary: $(PROGRAM)
 	printf '%s\n' '$(SAMPLE_DATA)' | ./$(PROGRAM) | grep -E '$(SUMMARY_PATTERN)'
 
 test: $(PROGRAM)
-	for script in $(TEST_SCRIPTS); do bash $$script; done
+	first=1; \
+	for script in $(TEST_SCRIPTS); do \
+		if [ $$first -eq 0 ]; then printf '\n'; fi; \
+		bash $$script; \
+		first=0; \
+	done
 
 gendata:
 	$(PYTHON) gendata.py

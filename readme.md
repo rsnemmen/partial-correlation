@@ -38,9 +38,9 @@ make test
 This runs two shell-based regression checks:
 
 - the bundled sample fixture in `data/test01.dat`, compared against `data/test01.txt`
-- the Merloni et al. (2003) Table 1 dump in `data/merloni2003.dat`, normalized on the fly and checked against the first row of that paper's Table 2 within scientific tolerances
+- the Merloni et al. (2003) Table 1 dump in `data/merloni2003.dat`, normalized on the fly and checked against the current fiducial output for the first Table 2 setup
 
-The Merloni regression uses `tests/prepare_merloni2003_row1.py` to strip repeated headers and notes, convert the raw table into the six-column `cens_tau` format for `(Log L_R, Log L_X, Log10 D)`, and verify that the result is stable even if rows sharing the same distance are reordered.
+The Merloni regression uses `tests/prepare_merloni2003_row1.py` to strip repeated headers and notes, convert the raw table into the six-column `cens_tau` format for `(Log L_R, Log L_X, Log10 D)`, verify that the result is stable even if rows sharing the same distance are reordered, and then compare the output to the repository's current fiducial result for that normalized fixture.
 
 If you only want the stable summary lines from a live sample run, use:
 

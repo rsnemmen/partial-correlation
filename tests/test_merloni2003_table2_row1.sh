@@ -7,11 +7,11 @@ raw_source="$repo_root/data/merloni2003.dat"
 prepare_script="$repo_root/tests/prepare_merloni2003_row1.py"
 python_bin="${PYTHON:-python}"
 
-paper_partial_tau="0.255"
-paper_sigma="0.0414"
-paper_tau_tolerance="0.015"
-paper_sigma_tolerance="0.005"
-paper_pnull_upper_bound="1e-8"
+expected_partial_tau="0.267236739"
+expected_sigma="4.58830856E-02"
+expected_probability="5.7353336267124159E-009"
+result_tolerance="1e-6"
+probability_tolerance="1e-10"
 order_tolerance="1e-9"
 
 source "$repo_root/tests/regression_helpers.sh"
@@ -37,11 +37,11 @@ trap 'rm -f "$tmp_fixture" "$tmp_reordered_fixture" "$tmp_output" "$tmp_reordere
 summary=$("$python_bin" "$prepare_script" "$raw_source" "$tmp_fixture")
 reordered_summary=$("$python_bin" "$prepare_script" --reverse-z-groups "$raw_source" "$tmp_reordered_fixture")
 
-assert_equal "Merloni rows" "$(summary_value "$summary" rows)" "149"
-assert_equal "Merloni radio upper limits" "$(summary_value "$summary" radio_upper_limits)" "20"
-assert_equal "Merloni X-ray upper limits" "$(summary_value "$summary" xray_upper_limits)" "14"
-assert_equal "Merloni Z upper limits" "$(summary_value "$summary" z_upper_limits)" "0"
-assert_equal "Merloni reordered rows" "$(summary_value "$reordered_summary" rows)" "149"
+assert_equal "Merloni+2003 rows" "$(summary_value "$summary" rows)" "149"
+assert_equal "Merloni+2003 radio upper limits" "$(summary_value "$summary" radio_upper_limits)" "20"
+assert_equal "Merloni+2003 X-ray upper limits" "$(summary_value "$summary" xray_upper_limits)" "14"
+assert_equal "Merloni+2003 Z upper limits" "$(summary_value "$summary" z_upper_limits)" "0"
+assert_equal "Merloni+2003 reordered rows" "$(summary_value "$reordered_summary" rows)" "149"
 
 printf '%s\n' "$tmp_fixture" | "$program" > "$tmp_output"
 printf '%s\n' "$tmp_reordered_fixture" | "$program" > "$tmp_reordered_output"
@@ -54,11 +54,11 @@ actual_probability=$(extract_equals_value "$tmp_output" 'Probability of null hyp
 reordered_partial_tau=$(extract_colon_value "$tmp_reordered_output" 'Partial Kendalls tau:')
 reordered_sigma=$(extract_colon_value "$tmp_reordered_output" 'Square root of variance (sigma):')
 
-assert_close "Merloni row-order partial tau" "$actual_partial_tau" "$reordered_partial_tau" "$order_tolerance"
-assert_close "Merloni row-order sigma" "$actual_sigma" "$reordered_sigma" "$order_tolerance"
-assert_close "Merloni partial tau" "$actual_partial_tau" "$paper_partial_tau" "$paper_tau_tolerance"
-assert_close "Merloni sigma" "$actual_sigma" "$paper_sigma" "$paper_sigma_tolerance"
-assert_equal "Merloni significance message" "$actual_message" "Zero partial correlation rejected at level 0.05"
-assert_less_equal "Merloni probability of null hypothesis" "$actual_probability" "$paper_pnull_upper_bound"
+assert_close "Merloni+2003 row-order partial tau" "$actual_partial_tau" "$reordered_partial_tau" "$order_tolerance"
+assert_close "Merloni+2003 row-order sigma" "$actual_sigma" "$reordered_sigma" "$order_tolerance"
+assert_close "Merloni+2003 partial tau" "$actual_partial_tau" "$expected_partial_tau" "$result_tolerance"
+assert_close "Merloni+2003 sigma" "$actual_sigma" "$expected_sigma" "$result_tolerance"
+assert_equal "Merloni+2003 significance message" "$actual_message" "Zero partial correlation rejected at level 0.05"
+assert_close "Merloni+2003 probability of null hypothesis" "$actual_probability" "$expected_probability" "$probability_tolerance"
 
-printf 'PASS: Merloni 2003 Table 2 row 1 reproduced from %s within tolerances\n' "${raw_source#$repo_root/}"
+printf 'PASS: Merloni+2003 normalized fixture matches current fiducial output from %s\n' "${raw_source#$repo_root/}"
