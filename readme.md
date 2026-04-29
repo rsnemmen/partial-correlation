@@ -1,10 +1,10 @@
 # Partial correlation coefficient and significance for censored data
 
-This branch is centered on the **Python implementation** of the partial Kendall tau test from [Akritas & Siebert (1996), *A test for partial correlation with censored astronomical data*](https://ui.adsabs.harvard.edu/abs/1996MNRAS.278..919A/abstract).
+Python implementation of the partial Kendall tau test from [Akritas & Siebert (1996), *A test for partial correlation with censored astronomical data*](https://ui.adsabs.harvard.edu/abs/1996MNRAS.278..919A/abstract).
 
 Use it when two variables appear correlated, but both may be driven by a third variable. A common astronomy example is checking whether two luminosities are still correlated after controlling for distance or redshift.
 
-The repository still includes the original Fortran executable as a scientific reference and regression target, but the recommended user-facing path on this branch is the Python CLI and library. If you want the original **Fortran-only** workflow and documentation, use the `legacy` branch.
+The repository still includes the original Fortran executable as a scientific reference and regression target, but the recommended user-facing path on this branch is the Python CLI and library. If you want the original *Fortran-only* workflow and documentation, use the `legacy` branch.
 
 ## What the Python implementation reports
 
