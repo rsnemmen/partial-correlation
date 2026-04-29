@@ -53,7 +53,7 @@ make sample
 
 The repository now also includes a NumPy/SciPy-backed Python port under `partial_correlation/`.
 
-You need Python plus the `numpy` and `scipy` packages to use it.
+You need Python plus the `numpy` and `scipy` packages to use it. If you want an optional progress bar for long runs, install `tqdm` as well.
 
 ### Run the Python CLI
 
@@ -66,6 +66,14 @@ or, if you want behavior closer to the Fortran executable, pipe the path on stan
 ```sh
 printf '%s\n' 'data/test01.dat' | python -m partial_correlation
 ```
+
+For long datasets, you can display a tqdm progress bar for the variance calculation:
+
+```sh
+python -m partial_correlation --progress path/to/your-data.dat
+```
+
+The progress bar is opt-in and is written to standard error, so the normal report on standard output stays unchanged.
 
 For the stable summary lines only:
 
@@ -80,6 +88,12 @@ from partial_correlation import partial_kendall_tau_from_file
 
 result = partial_kendall_tau_from_file("data/test01.dat")
 print(result.partial_tau, result.sigma, result.null_hypothesis_probability)
+```
+
+If you want progress reporting from the library as well:
+
+```python
+result = partial_kendall_tau_from_file("data/test01.dat", progress=True)
 ```
 
 If your data are already in memory, use the array-based entry point:

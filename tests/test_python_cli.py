@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
 
+import partial_correlation.core as core
 from .pytest_helpers import (
     FIXTURE,
     REFERENCE,
@@ -108,3 +110,32 @@ def test_python_cli_matches_merloni_regression(tmp_path: Path) -> None:
         rel=0.0,
         abs=PROBABILITY_TOLERANCE,
     )
+
+
+def test_python_cli_progress_flag_reports_progress(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    events: list[int] = []
+
+    class FakeProgressBar:
+        def __init__(self, *, total: int) -> None:
+            self.total = total
+            print(f'progress-start total={total}', file=sys.stderr)
+
+        def update(self, amount: int = 1) -> None:
+            events.append(amount)
+
+        def close(self) -> None:
+            print(f'progress-close updates={sum(events)} total={self.total}', file=sys.stderr)
+
+    monkeypatch.setattr(core, '_create_progress_bar', lambda *, total: FakeProgressBar(total=total))
+
+    exit_code = core.main(['--progress', str(FIXTURE)])
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    assert sum(events) == 50
+    assert 'Partial Kendalls tau:' in captured.out
+    assert 'progress-start total=50' in captured.err
+    assert 'progress-close updates=50 total=50' in captured.err

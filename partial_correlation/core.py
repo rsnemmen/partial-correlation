@@ -77,6 +77,8 @@ def partial_kendall_tau(
     cens_y: ArrayLike,
     z: ArrayLike,
     cens_z: ArrayLike,
+    *,
+    progress: bool = False,
 ) -> PartialKendallResult:
     values = np.column_stack(
         (
@@ -92,19 +94,25 @@ def partial_kendall_tau(
             _as_censor_vector(cens_z, name='cens_z'),
         )
     )
-    return partial_kendall_tau_table(values, censoring)
+    return partial_kendall_tau_table(values, censoring, progress=progress)
 
 
 def partial_kendall_tau_from_file(
     path: str | Path,
     *,
     max_rows: int | None = DEFAULT_MAX_FILE_ROWS,
+    progress: bool = False,
 ) -> PartialKendallResult:
     values, censoring = read_table(path, max_rows=max_rows)
-    return partial_kendall_tau_table(values, censoring)
+    return partial_kendall_tau_table(values, censoring, progress=progress)
 
 
-def partial_kendall_tau_table(values: ArrayLike, censoring: ArrayLike) -> PartialKendallResult:
+def partial_kendall_tau_table(
+    values: ArrayLike,
+    censoring: ArrayLike,
+    *,
+    progress: bool = False,
+) -> PartialKendallResult:
     value_table = _as_value_table(values)
     censor_table = _as_censor_table(censoring, n_rows=value_table.shape[0])
 
@@ -120,7 +128,7 @@ def partial_kendall_tau_table(values: ArrayLike, censoring: ArrayLike) -> Partia
 
     denominator = (1.0 - tau_13**2) * (1.0 - tau_23**2)
     partial_tau = float((tau_12 - tau_13 * tau_23) / np.sqrt(denominator))
-    sigma = float(np.sqrt(_compute_an(c_matrices) / (value_table.shape[0] * denominator)))
+    sigma = float(np.sqrt(_compute_an(c_matrices, progress=progress) / (value_table.shape[0] * denominator)))
     z_score = float(abs(partial_tau / sigma))
     null_probability = float(erfc(z_score / _SQRT_TWO))
 
@@ -187,6 +195,11 @@ def main(argv: list[str] | None = None) -> int:
         default=DEFAULT_MAX_FILE_ROWS,
         help='maximum number of rows to accept from a file (default: %(default)s)',
     )
+    parser.add_argument(
+        '--progress',
+        action='store_true',
+        help='display a tqdm progress bar while computing the variance term',
+    )
     args = parser.parse_args(argv)
 
     input_path = args.path
@@ -199,7 +212,7 @@ def main(argv: list[str] | None = None) -> int:
             parser.error('an input file path is required')
 
     try:
-        result = partial_kendall_tau_from_file(input_path, max_rows=args.max_rows)
+        result = partial_kendall_tau_from_file(input_path, max_rows=args.max_rows, progress=args.progress)
     except Exception as exc:
         print(f'ERROR: {exc}', file=sys.stderr)
         return 1
@@ -260,32 +273,50 @@ def _kendall_tau(c_x: FloatArray, c_y: FloatArray) -> float:
     return float(np.triu(c_x * c_y, k=1).sum(dtype=np.float64) * coefficient)
 
 
-def _compute_an(c_matrices: FloatArray) -> float:
+def _compute_an(c_matrices: FloatArray, *, progress: bool = False) -> float:
     c_x, c_y, c_z = c_matrices
     yz_symmetric = c_y * c_z + (c_y * c_z).T
     n_rows = c_x.shape[0]
     aasum = np.zeros(n_rows, dtype=np.float64)
+    progress_bar = _create_progress_bar(total=n_rows) if progress else None
 
-    for i1 in range(n_rows):
-        total = 0.0
-        for j1 in range(n_rows - 2):
-            if j1 == i1:
-                continue
-            for j2 in range(j1 + 2, n_rows):
-                if j2 == i1:
+    try:
+        for i1 in range(n_rows):
+            total = 0.0
+            for j1 in range(n_rows - 2):
+                if j1 == i1:
                     continue
-                if j1 < i1 < j2:
-                    total += _segment_contribution(c_x, c_y, c_z, yz_symmetric, i1, j1, j2, j1 + 1, i1)
-                    total += _segment_contribution(c_x, c_y, c_z, yz_symmetric, i1, j1, j2, i1 + 1, j2)
-                else:
-                    total += _segment_contribution(c_x, c_y, c_z, yz_symmetric, i1, j1, j2, j1 + 1, j2)
-        aasum[i1] = total / 24.0
+                for j2 in range(j1 + 2, n_rows):
+                    if j2 == i1:
+                        continue
+                    if j1 < i1 < j2:
+                        total += _segment_contribution(c_x, c_y, c_z, yz_symmetric, i1, j1, j2, j1 + 1, i1)
+                        total += _segment_contribution(c_x, c_y, c_z, yz_symmetric, i1, j1, j2, i1 + 1, j2)
+                    else:
+                        total += _segment_contribution(c_x, c_y, c_z, yz_symmetric, i1, j1, j2, j1 + 1, j2)
+            aasum[i1] = total / 24.0
+            if progress_bar is not None:
+                progress_bar.update(1)
+    finally:
+        if progress_bar is not None:
+            progress_bar.close()
 
     c1 = 16.0 / (n_rows - 1.0)
     c2 = 6.0 / ((n_rows - 1.0) * (n_rows - 2.0) * (n_rows - 3.0))
     centered = c2 * aasum
     ave = centered.mean(dtype=np.float64)
     return float(c1 * np.square(centered - ave).sum(dtype=np.float64))
+
+
+def _create_progress_bar(*, total: int):
+    try:
+        from tqdm.auto import tqdm
+    except ImportError as exc:
+        raise RuntimeError(
+            'progress reporting requires tqdm; install tqdm to use --progress or progress=True'
+        ) from exc
+
+    return tqdm(total=total, desc='Calculating variance', unit='row', file=sys.stderr)
 
 
 def _segment_contribution(

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 
+import partial_correlation.core as core
 from partial_correlation import (
     partial_kendall_tau,
     partial_kendall_tau_from_file,
@@ -62,3 +64,35 @@ def test_read_table_rejects_malformed_fixture(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match='expected six whitespace-delimited columns'):
         read_table(invalid_fixture)
+
+
+def test_python_api_progress_option_reports_progress(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    events: list[int] = []
+
+    class FakeProgressBar:
+        def __init__(self, *, total: int) -> None:
+            self.total = total
+            print(f'progress-start total={total}', file=sys.stderr)
+
+        def update(self, amount: int = 1) -> None:
+            events.append(amount)
+
+        def close(self) -> None:
+            print(f'progress-close updates={sum(events)} total={self.total}', file=sys.stderr)
+
+    monkeypatch.setattr(core, '_create_progress_bar', lambda *, total: FakeProgressBar(total=total))
+
+    expected = partial_kendall_tau_from_file(FIXTURE)
+    result = partial_kendall_tau_from_file(FIXTURE, progress=True)
+    captured = capsys.readouterr()
+
+    for field in RESULT_FIELDS:
+        assert getattr(result, field) == pytest.approx(
+            getattr(expected, field),
+            rel=0.0,
+            abs=1e-12,
+        )
+
+    assert sum(events) == 50
+    assert 'progress-start total=50' in captured.err
+    assert 'progress-close updates=50 total=50' in captured.err
