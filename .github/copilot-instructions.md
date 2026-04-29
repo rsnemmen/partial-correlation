@@ -9,13 +9,12 @@
 - **Run the Python sample CLI:** `make python-sample`
 - **Inspect the stable Python summary lines:** `make python-summary`
 - **Run the full regression suite:** `make test`
-- **Run the Python CLI regression only:** `bash tests/test_python_cli.sh`
-- **Run the Python API regression only:** `bash tests/test_python_api.sh`
+- **Run the Python regressions only:** `make python-test`
 - **Generate a fresh synthetic dataset:** `make gendata`
 - **Run the Python CLI directly:** `python -m partial_correlation data/test01.dat`
 - **Linting:** no linter is configured in this repository.
 
-The repository now has an automated multi-check regression suite. `make test` runs the legacy Fortran fixture checks plus Python CLI/API parity checks against the same scientific outputs. Exact prompt text, spacing, and floating-point formatting can still vary slightly by runtime, so prefer checking the reported tau values, sigma, and significance message over requiring byte-for-byte output identity.
+The repository now has an automated multi-check regression suite. `make test` runs the legacy Fortran shell fixture checks plus pytest-based Python CLI/API parity checks against the same scientific outputs. Exact prompt text, spacing, and floating-point formatting can still vary slightly by runtime, so prefer checking the reported tau values, sigma, and significance message over requiring byte-for-byte output identity.
 
 The bundled sample fixture `data/test01.dat` is an all-detections case (`censX = censY = censZ = 1` throughout). It is useful for basic regressions, but it does **not** exercise the upper-limit branches of the censored-data algorithm by itself; the Merloni-derived regression fixture covers censored radio/X-ray values.
 

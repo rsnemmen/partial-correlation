@@ -1,16 +1,18 @@
 FC = gfortran
 FFLAGS = -O
 PYTHON ?= python
+PYTEST ?= $(PYTHON) -m pytest
 PYTHON_PROGRAM := $(PYTHON) -m partial_correlation
 
 PROGRAM := cens_tau
 SOURCE := cens_tau.f
 DATA_DIR := data
 SAMPLE_DATA := $(DATA_DIR)/test01.dat
-TEST_SCRIPTS := tests/test_test01.sh tests/test_merloni2003_table2_row1.sh tests/test_python_cli.sh tests/test_python_api.sh
+FORTRAN_TEST_SCRIPTS := tests/test_test01.sh tests/test_merloni2003_table2_row1.sh
+PYTHON_TESTS := tests/test_python_api.py tests/test_python_cli.py
 SUMMARY_PATTERN := Tau\(|Partial Kendalls tau|Square root of variance|Zero partial correlation|Probability of null hypothesis
 
-.PHONY: all build sample run summary python-sample python-summary test gendata clean
+.PHONY: all build sample run summary python-sample python-summary python-test test gendata clean
 
 all: build
 
@@ -33,13 +35,19 @@ python-sample:
 python-summary:
 	$(PYTHON_PROGRAM) $(SAMPLE_DATA) | grep -E '$(SUMMARY_PATTERN)'
 
+python-test:
+	$(PYTEST) $(PYTHON_TESTS)
+
 test: $(PROGRAM)
+	set -e; \
 	first=1; \
-	for script in $(TEST_SCRIPTS); do \
+	for script in $(FORTRAN_TEST_SCRIPTS); do \
 		if [ $$first -eq 0 ]; then printf '\n'; fi; \
 		bash $$script; \
 		first=0; \
-	done
+	done; \
+	printf '\n'; \
+	$(PYTEST) $(PYTHON_TESTS)
 
 gendata:
 	$(PYTHON) gendata.py

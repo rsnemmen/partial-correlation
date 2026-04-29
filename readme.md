@@ -31,6 +31,7 @@ Common commands:
 | `make summary` | Print only the stable summary lines from the sample run |
 | `make python-sample` | Run the Python CLI on `data/test01.dat` |
 | `make python-summary` | Print only the stable Python summary lines |
+| `make python-test` | Run the pytest-based Python regressions |
 | `make test` | Run the regression checks |
 | `make gendata` | Regenerate `data/test01.dat` with synthetic data |
 | `./make.sh` | Legacy build wrapper; still supported |
@@ -188,10 +189,16 @@ printf '%s\n' 'path/to/your-data.dat' | ./cens_tau | grep -E 'Tau\(|Partial Kend
 
 `make test` currently runs four checks:
 
-1. the bundled fixture `data/test01.dat`, compared against `data/test01.txt`
-2. a normalized fixture derived from `data/merloni2003.dat`, checked against the repository's current fiducial output for the first Table 2 setup
-3. the Python CLI against the bundled and normalized fixtures
-4. the Python library entry points against the bundled sample fixture
+1. the bundled fixture `data/test01.dat`, compared against `data/test01.txt` by the legacy Fortran shell regression
+2. a normalized fixture derived from `data/merloni2003.dat`, checked against the repository's current fiducial output for the first Table 2 setup by the legacy Fortran shell regression
+3. the Python CLI regressions under `pytest`, covering the bundled and normalized fixtures plus stdin-path handling
+4. the Python library/API regressions under `pytest`
+
+If you only want the Python-side automated checks, run:
+
+```sh
+make python-test
+```
 
 If you only want to inspect the stable summary values from the bundled sample fixture:
 
