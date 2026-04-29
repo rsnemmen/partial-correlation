@@ -29,13 +29,19 @@ The legacy wrapper script still works too:
 
 # Usage
 
-For a reproducible smoke test, build the executable and run it against the bundled sample file:
+For an automated regression test, build the executable and run it against the bundled sample fixture:
 
 ```sh
 make test
 ```
 
-This should print the three pairwise Kendall tau values, the partial Kendall tau, the null-hypothesis significance summary, and only the stable summary lines from the sample run.
+This runs a shell-based regression check against `data/test01.dat`, using `data/test01.txt` as the reference transcript. It compares the stable scientific outputs with numeric tolerances instead of diffing the entire stdout transcript.
+
+If you only want the stable summary lines from a live sample run, use:
+
+```sh
+make summary
+```
 
 If you want the full sample output instead, run:
 
@@ -75,7 +81,9 @@ numpy.savetxt(fileout, transpose((X,censX,Y,censY,Z,censZ)), fmt='%10.4f %i %10.
 
 [![asciicast](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B.svg)](https://asciinema.org/a/OHsWi1RysfiDEXtJjJMfYKL1B)
 
-If you want to generate a fresh artificial dataset, run `make gendata` (or `python gendata.py` directly; requires NumPy). It writes a mock dataset to `test01.dat` where X and Y are both correlated with Z, overwriting the bundled sample file.
+If you want to generate a fresh artificial dataset, run `make gendata` (or `python gendata.py` directly; requires NumPy). It writes a mock dataset to `data/test01.dat` where X and Y are both correlated with Z, overwriting the bundled sample fixture.
+
+The current automated fixture in `data/test01.dat` contains detections only (`censX = censY = censZ = 1` throughout), so it is useful for baseline regressions but does not yet exercise the upper-limit branches of the censored-data algorithm.
 
 # Citation
 

@@ -2,6 +2,8 @@
 Generates mock data sets for partial correlation analysis with cens_tau.f.
 """
 
+import os
+
 import numpy
 
 """
@@ -21,4 +23,6 @@ y=5.*z+3.+noisey
 cens=numpy.ones(x.size,dtype=int)
 
 # Exports to a data file
-numpy.savetxt('test01.dat',numpy.transpose((x,cens,y,cens,z,cens)),fmt='%10.4f %i %10.4f %i %10.4f %i')
+outfile=os.path.join('data','test01.dat')
+os.makedirs(os.path.dirname(outfile), exist_ok=True)
+numpy.savetxt(outfile,numpy.transpose((x,cens,y,cens,z,cens)),fmt='%10.4f %i %10.4f %i %10.4f %i')
