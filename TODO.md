@@ -2,4 +2,6 @@
 - [x] port fortran core to python
 - [x] improve README with a full walkthrough example
 - [x] tests with pytest
-- [ ] why python code so slow? progress bar?
+- [x] why python code so slow? 
+- [x] progress bar?
+- [ ] optimize `_compute_an` with C
