@@ -33,6 +33,7 @@ c	  account the effect of z)
       character infile*256     
       character dataline*256   
       real x1,x2,x3
+      double precision zscore,pnull,pnormtail
       integer ic1,ic2,ic3,ios
 
 C-------------------------------------------------------------
@@ -152,9 +153,10 @@ C--------------------------------------------------
 c Nemmen -->
       write(*,*)
       write(*,*) 'More specifically:'
-      write(*,*) 'Null hypothesis rejected at ', abs(res/sig), 'sigma'
-      write(*,*) 'Probability of null hypothesis =', 1.-erf(abs(res
-     # /sig)/sqrt(2.))
+      zscore=dabs(dble(res)/dble(sig))
+      pnull=pnormtail(zscore)
+      write(*,*) 'Null hypothesis rejected at ', zscore, 'sigma'
+      write(*,*) 'Probability of null hypothesis =', pnull
 c N <--
       
       stop
@@ -180,6 +182,18 @@ C------------------------------------------------------
           intok=.false.
         endif
  5    continue
+      return
+      end
+
+      double precision function pnormtail(z)
+      double precision z,t,x
+
+      x=z/sqrt(2.d0)
+      t=1.d0/(1.d0+0.5d0*x)
+      pnormtail=t*exp(-x*x-1.26551223d0+t*(1.00002368d0+
+     #  t*(0.37409196d0+t*(0.09678418d0+t*(-0.18628806d0+
+     #  t*(0.27886807d0+t*(-1.13520398d0+t*(1.48851587d0+
+     #  t*(-0.82215223d0+t*0.17087277d0)))))))))
       return
       end
 
@@ -227,196 +241,196 @@ C------- COMPUTES VALUE FOR A_N -------------------------
             if(j2.eq.i1) goto 12  !
             do 13 i2=j1+1,j2-1    !
             if(i2.eq.i1) goto 13  !
-            cj1=- idat(j1,k1)
-            if(dat(i1,k1).lt.dat(j1,k1)) cj1=idat(i1,k1)
-            cj2=- idat(j1,k2)
-            if(dat(i1,k2).lt.dat(j1,k2)) cj2=idat(i1,k2)
-            cj3=- idat(j1,k3)
-            if(dat(i1,k3).lt.dat(j1,k3)) cj3=idat(i1,k3)
-            cj4=- idat(j2,k2)
-            if(dat(i2,k2).lt.dat(j2,k2)) cj4=idat(i2,k2)
-            cj5=- idat(j2,k3)
-            if(dat(i2,k3).lt.dat(j2,k3)) cj5=idat(i2,k3)
-            cj6=- idat(i2,k2)
-            if(dat(j2,k2).lt.dat(i2,k2)) cj6=idat(j2,k2)
-            cj7=- idat(i2,k3)
-            if(dat(j2,k3).lt.dat(i2,k3)) cj7=idat(j2,k3)
+            cj1=cval(dat(i1,k1),dat(j1,k1),
+     #         idat(i1,k1),idat(j1,k1))
+            cj2=cval(dat(i1,k2),dat(j1,k2),
+     #         idat(i1,k2),idat(j1,k2))
+            cj3=cval(dat(i1,k3),dat(j1,k3),
+     #         idat(i1,k3),idat(j1,k3))
+            cj4=cval(dat(i2,k2),dat(j2,k2),
+     #         idat(i2,k2),idat(j2,k2))
+            cj5=cval(dat(i2,k3),dat(j2,k3),
+     #         idat(i2,k3),idat(j2,k3))
+            cj6=cval(dat(j2,k2),dat(i2,k2),
+     #         idat(j2,k2),idat(i2,k2))
+            cj7=cval(dat(j2,k3),dat(i2,k3),
+     #         idat(j2,k3),idat(i2,k3))
             gtsum=cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(j2,k1)
-            if(dat(i1,k1).lt.dat(j2,k1)) cj1=idat(i1,k1)
-            cj2=- idat(j2,k2)
-            if(dat(i1,k2).lt.dat(j2,k2)) cj2=idat(i1,k2)
-            cj3=- idat(j2,k3)
-            if(dat(i1,k3).lt.dat(j2,k3)) cj3=idat(i1,k3)
-            cj4=- idat(j1,k2)
-            if(dat(i2,k2).lt.dat(j1,k2)) cj4=idat(i2,k2)
-            cj5=- idat(j1,k3)
-            if(dat(i2,k3).lt.dat(j1,k3)) cj5=idat(i2,k3)
-            cj6=- idat(i2,k2)
-            if(dat(j1,k2).lt.dat(i2,k2)) cj6=idat(j1,k2)
-            cj7=- idat(i2,k3)
-            if(dat(j1,k3).lt.dat(i2,k3)) cj7=idat(j1,k3)
+            cj1=cval(dat(i1,k1),dat(j2,k1),
+     #         idat(i1,k1),idat(j2,k1))
+            cj2=cval(dat(i1,k2),dat(j2,k2),
+     #         idat(i1,k2),idat(j2,k2))
+            cj3=cval(dat(i1,k3),dat(j2,k3),
+     #         idat(i1,k3),idat(j2,k3))
+            cj4=cval(dat(i2,k2),dat(j1,k2),
+     #         idat(i2,k2),idat(j1,k2))
+            cj5=cval(dat(i2,k3),dat(j1,k3),
+     #         idat(i2,k3),idat(j1,k3))
+            cj6=cval(dat(j1,k2),dat(i2,k2),
+     #         idat(j1,k2),idat(i2,k2))
+            cj7=cval(dat(j1,k3),dat(i2,k3),
+     #         idat(j1,k3),idat(i2,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(i2,k1)
-            if(dat(i1,k1).lt.dat(i2,k1)) cj1=idat(i1,k1)
-            cj2=- idat(i2,k2)
-            if(dat(i1,k2).lt.dat(i2,k2)) cj2=idat(i1,k2)
-            cj3=- idat(i2,k3)
-            if(dat(i1,k3).lt.dat(i2,k3)) cj3=idat(i1,k3)
-            cj4=- idat(j1,k2)
-            if(dat(j2,k2).lt.dat(j1,k2)) cj4=idat(j2,k2)
-            cj5=- idat(j1,k3)
-            if(dat(j2,k3).lt.dat(j1,k3)) cj5=idat(j2,k3)
-            cj6=- idat(j2,k2)
-            if(dat(j1,k2).lt.dat(j2,k2)) cj6=idat(j1,k2)
-            cj7=- idat(j2,k3)
-            if(dat(j1,k3).lt.dat(j2,k3)) cj7=idat(j1,k3)
+            cj1=cval(dat(i1,k1),dat(i2,k1),
+     #         idat(i1,k1),idat(i2,k1))
+            cj2=cval(dat(i1,k2),dat(i2,k2),
+     #         idat(i1,k2),idat(i2,k2))
+            cj3=cval(dat(i1,k3),dat(i2,k3),
+     #         idat(i1,k3),idat(i2,k3))
+            cj4=cval(dat(j2,k2),dat(j1,k2),
+     #         idat(j2,k2),idat(j1,k2))
+            cj5=cval(dat(j2,k3),dat(j1,k3),
+     #         idat(j2,k3),idat(j1,k3))
+            cj6=cval(dat(j1,k2),dat(j2,k2),
+     #         idat(j1,k2),idat(j2,k2))
+            cj7=cval(dat(j1,k3),dat(j2,k3),
+     #         idat(j1,k3),idat(j2,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(i1,k1)
-            if(dat(j1,k1).lt.dat(i1,k1)) cj1=idat(j1,k1)
-            cj2=- idat(i1,k2)
-            if(dat(j1,k2).lt.dat(i1,k2)) cj2=idat(j1,k2)
-            cj3=- idat(i1,k3)
-            if(dat(j1,k3).lt.dat(i1,k3)) cj3=idat(j1,k3)
-            cj4=- idat(j2,k2)
-            if(dat(i2,k2).lt.dat(j2,k2)) cj4=idat(i2,k2)
-            cj5=- idat(j2,k3)
-            if(dat(i2,k3).lt.dat(j2,k3)) cj5=idat(i2,k3)
-            cj6=- idat(i2,k2)
-            if(dat(j2,k2).lt.dat(i2,k2)) cj6=idat(j2,k2)
-            cj7=- idat(i2,k3)
-            if(dat(j2,k3).lt.dat(i2,k3)) cj7=idat(j2,k3)
+            cj1=cval(dat(j1,k1),dat(i1,k1),
+     #         idat(j1,k1),idat(i1,k1))
+            cj2=cval(dat(j1,k2),dat(i1,k2),
+     #         idat(j1,k2),idat(i1,k2))
+            cj3=cval(dat(j1,k3),dat(i1,k3),
+     #         idat(j1,k3),idat(i1,k3))
+            cj4=cval(dat(i2,k2),dat(j2,k2),
+     #         idat(i2,k2),idat(j2,k2))
+            cj5=cval(dat(i2,k3),dat(j2,k3),
+     #         idat(i2,k3),idat(j2,k3))
+            cj6=cval(dat(j2,k2),dat(i2,k2),
+     #         idat(j2,k2),idat(i2,k2))
+            cj7=cval(dat(j2,k3),dat(i2,k3),
+     #         idat(j2,k3),idat(i2,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(i2,k1)
-            if(dat(j1,k1).lt.dat(i2,k1)) cj1=idat(j1,k1)
-            cj2=- idat(i2,k2)
-            if(dat(j1,k2).lt.dat(i2,k2)) cj2=idat(j1,k2)
-            cj3=- idat(i2,k3)
-            if(dat(j1,k3).lt.dat(i2,k3)) cj3=idat(j1,k3)
-            cj4=- idat(j2,k2)
-            if(dat(i1,k2).lt.dat(j2,k2)) cj4=idat(i1,k2)
-            cj5=- idat(j2,k3)
-            if(dat(i1,k3).lt.dat(j2,k3)) cj5=idat(i1,k3)
-            cj6=- idat(i1,k2)
-            if(dat(j2,k2).lt.dat(i1,k2)) cj6=idat(j2,k2)
-            cj7=- idat(i1,k3)
-            if(dat(j2,k3).lt.dat(i1,k3)) cj7=idat(j2,k3)
+            cj1=cval(dat(j1,k1),dat(i2,k1),
+     #         idat(j1,k1),idat(i2,k1))
+            cj2=cval(dat(j1,k2),dat(i2,k2),
+     #         idat(j1,k2),idat(i2,k2))
+            cj3=cval(dat(j1,k3),dat(i2,k3),
+     #         idat(j1,k3),idat(i2,k3))
+            cj4=cval(dat(i1,k2),dat(j2,k2),
+     #         idat(i1,k2),idat(j2,k2))
+            cj5=cval(dat(i1,k3),dat(j2,k3),
+     #         idat(i1,k3),idat(j2,k3))
+            cj6=cval(dat(j2,k2),dat(i1,k2),
+     #         idat(j2,k2),idat(i1,k2))
+            cj7=cval(dat(j2,k3),dat(i1,k3),
+     #         idat(j2,k3),idat(i1,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(j2,k1)
-            if(dat(j1,k1).lt.dat(j2,k1)) cj1=idat(j1,k1)
-            cj2=- idat(j2,k2)
-            if(dat(j1,k2).lt.dat(j2,k2)) cj2=idat(j1,k2)
-            cj3=- idat(j2,k3)
-            if(dat(j1,k3).lt.dat(j2,k3)) cj3=idat(j1,k3)
-            cj4=- idat(i2,k2)
-            if(dat(i1,k2).lt.dat(i2,k2)) cj4=idat(i1,k2)
-            cj5=- idat(i2,k3)
-            if(dat(i1,k3).lt.dat(i2,k3)) cj5=idat(i1,k3)
-            cj6=- idat(i1,k2)
-            if(dat(i2,k2).lt.dat(i1,k2)) cj6=idat(i2,k2)
-            cj7=- idat(i1,k3)
-            if(dat(i2,k3).lt.dat(i1,k3)) cj7=idat(i2,k3)
+            cj1=cval(dat(j1,k1),dat(j2,k1),
+     #         idat(j1,k1),idat(j2,k1))
+            cj2=cval(dat(j1,k2),dat(j2,k2),
+     #         idat(j1,k2),idat(j2,k2))
+            cj3=cval(dat(j1,k3),dat(j2,k3),
+     #         idat(j1,k3),idat(j2,k3))
+            cj4=cval(dat(i1,k2),dat(i2,k2),
+     #         idat(i1,k2),idat(i2,k2))
+            cj5=cval(dat(i1,k3),dat(i2,k3),
+     #         idat(i1,k3),idat(i2,k3))
+            cj6=cval(dat(i2,k2),dat(i1,k2),
+     #         idat(i2,k2),idat(i1,k2))
+            cj7=cval(dat(i2,k3),dat(i1,k3),
+     #         idat(i2,k3),idat(i1,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(i1,k1)
-            if(dat(i2,k1).lt.dat(i1,k1)) cj1=idat(i2,k1)
-            cj2=- idat(i1,k2)
-            if(dat(i2,k2).lt.dat(i1,k2)) cj2=idat(i2,k2)
-            cj3=- idat(i1,k3)
-            if(dat(i2,k3).lt.dat(i1,k3)) cj3=idat(i2,k3)
-            cj4=- idat(j2,k2)
-            if(dat(j1,k2).lt.dat(j2,k2)) cj4=idat(j1,k2)
-            cj5=- idat(j2,k3)
-            if(dat(j1,k3).lt.dat(j2,k3)) cj5=idat(j1,k3)
-            cj6=- idat(j1,k2)
-            if(dat(j2,k2).lt.dat(j1,k2)) cj6=idat(j2,k2)
-            cj7=- idat(j1,k3)
-            if(dat(j2,k3).lt.dat(j1,k3)) cj7=idat(j2,k3)
+            cj1=cval(dat(i2,k1),dat(i1,k1),
+     #         idat(i2,k1),idat(i1,k1))
+            cj2=cval(dat(i2,k2),dat(i1,k2),
+     #         idat(i2,k2),idat(i1,k2))
+            cj3=cval(dat(i2,k3),dat(i1,k3),
+     #         idat(i2,k3),idat(i1,k3))
+            cj4=cval(dat(j1,k2),dat(j2,k2),
+     #         idat(j1,k2),idat(j2,k2))
+            cj5=cval(dat(j1,k3),dat(j2,k3),
+     #         idat(j1,k3),idat(j2,k3))
+            cj6=cval(dat(j2,k2),dat(j1,k2),
+     #         idat(j2,k2),idat(j1,k2))
+            cj7=cval(dat(j2,k3),dat(j1,k3),
+     #         idat(j2,k3),idat(j1,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(j1,k1)
-            if(dat(i2,k1).lt.dat(j1,k1)) cj1=idat(i2,k1)
-            cj2=- idat(j1,k2)
-            if(dat(i2,k2).lt.dat(j1,k2)) cj2=idat(i2,k2)
-            cj3=- idat(j1,k3)
-            if(dat(i2,k3).lt.dat(j1,k3)) cj3=idat(i2,k3)
-            cj4=- idat(j2,k2)
-            if(dat(i1,k2).lt.dat(j2,k2)) cj4=idat(i1,k2)
-            cj5=- idat(j2,k3)
-            if(dat(i1,k3).lt.dat(j2,k3)) cj5=idat(i1,k3)
-            cj6=- idat(i1,k2)
-            if(dat(j2,k2).lt.dat(i1,k2)) cj6=idat(j2,k2)
-            cj7=- idat(i1,k3)
-            if(dat(j2,k3).lt.dat(i1,k3)) cj7=idat(j2,k3)
+            cj1=cval(dat(i2,k1),dat(j1,k1),
+     #         idat(i2,k1),idat(j1,k1))
+            cj2=cval(dat(i2,k2),dat(j1,k2),
+     #         idat(i2,k2),idat(j1,k2))
+            cj3=cval(dat(i2,k3),dat(j1,k3),
+     #         idat(i2,k3),idat(j1,k3))
+            cj4=cval(dat(i1,k2),dat(j2,k2),
+     #         idat(i1,k2),idat(j2,k2))
+            cj5=cval(dat(i1,k3),dat(j2,k3),
+     #         idat(i1,k3),idat(j2,k3))
+            cj6=cval(dat(j2,k2),dat(i1,k2),
+     #         idat(j2,k2),idat(i1,k2))
+            cj7=cval(dat(j2,k3),dat(i1,k3),
+     #         idat(j2,k3),idat(i1,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(j2,k1)
-            if(dat(i2,k1).lt.dat(j2,k1)) cj1=idat(i2,k1)
-            cj2=- idat(j2,k2)
-            if(dat(i2,k2).lt.dat(j2,k2)) cj2=idat(i2,k2)
-            cj3=- idat(j2,k3)
-            if(dat(i2,k3).lt.dat(j2,k3)) cj3=idat(i2,k3)
-            cj4=- idat(j1,k2)
-            if(dat(i1,k2).lt.dat(j1,k2)) cj4=idat(i1,k2)
-            cj5=- idat(j1,k3)
-            if(dat(i1,k3).lt.dat(j1,k3)) cj5=idat(i1,k3)
-            cj6=- idat(i1,k2)
-            if(dat(j1,k2).lt.dat(i1,k2)) cj6=idat(j1,k2)
-            cj7=- idat(i1,k3)
-            if(dat(j1,k3).lt.dat(i1,k3)) cj7=idat(j1,k3)
+            cj1=cval(dat(i2,k1),dat(j2,k1),
+     #         idat(i2,k1),idat(j2,k1))
+            cj2=cval(dat(i2,k2),dat(j2,k2),
+     #         idat(i2,k2),idat(j2,k2))
+            cj3=cval(dat(i2,k3),dat(j2,k3),
+     #         idat(i2,k3),idat(j2,k3))
+            cj4=cval(dat(i1,k2),dat(j1,k2),
+     #         idat(i1,k2),idat(j1,k2))
+            cj5=cval(dat(i1,k3),dat(j1,k3),
+     #         idat(i1,k3),idat(j1,k3))
+            cj6=cval(dat(j1,k2),dat(i1,k2),
+     #         idat(j1,k2),idat(i1,k2))
+            cj7=cval(dat(j1,k3),dat(i1,k3),
+     #         idat(j1,k3),idat(i1,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(i1,k1)
-            if(dat(j2,k1).lt.dat(i1,k1)) cj1=idat(j2,k1)
-            cj2=- idat(i1,k2)
-            if(dat(j2,k2).lt.dat(i1,k2)) cj2=idat(j2,k2)
-            cj3=- idat(i1,k3)
-            if(dat(j2,k3).lt.dat(i1,k3)) cj3=idat(j2,k3)
-            cj4=- idat(i2,k2)
-            if(dat(j1,k2).lt.dat(i2,k2)) cj4=idat(j1,k2)
-            cj5=- idat(i2,k3)
-            if(dat(j1,k3).lt.dat(i2,k3)) cj5=idat(j1,k3)
-            cj6=- idat(j1,k2)
-            if(dat(i2,k2).lt.dat(j1,k2)) cj6=idat(i2,k2)
-            cj7=- idat(j1,k3)
-            if(dat(i2,k3).lt.dat(j1,k3)) cj7=idat(i2,k3)
+            cj1=cval(dat(j2,k1),dat(i1,k1),
+     #         idat(j2,k1),idat(i1,k1))
+            cj2=cval(dat(j2,k2),dat(i1,k2),
+     #         idat(j2,k2),idat(i1,k2))
+            cj3=cval(dat(j2,k3),dat(i1,k3),
+     #         idat(j2,k3),idat(i1,k3))
+            cj4=cval(dat(j1,k2),dat(i2,k2),
+     #         idat(j1,k2),idat(i2,k2))
+            cj5=cval(dat(j1,k3),dat(i2,k3),
+     #         idat(j1,k3),idat(i2,k3))
+            cj6=cval(dat(i2,k2),dat(j1,k2),
+     #         idat(i2,k2),idat(j1,k2))
+            cj7=cval(dat(i2,k3),dat(j1,k3),
+     #         idat(i2,k3),idat(j1,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(j1,k1)
-            if(dat(j2,k1).lt.dat(j1,k1)) cj1=idat(j2,k1)
-            cj2=- idat(j1,k2)
-            if(dat(j2,k2).lt.dat(j1,k2)) cj2=idat(j2,k2)
-            cj3=- idat(j1,k3)
-            if(dat(j2,k3).lt.dat(j1,k3)) cj3=idat(j2,k3)
-            cj4=- idat(i1,k2)
-            if(dat(i2,k2).lt.dat(i1,k2)) cj4=idat(i2,k2)
-            cj5=- idat(i1,k3)
-            if(dat(i2,k3).lt.dat(i1,k3)) cj5=idat(i2,k3)
-            cj6=- idat(i2,k2)
-            if(dat(i1,k2).lt.dat(i2,k2)) cj6=idat(i1,k2)
-            cj7=- idat(i2,k3)
-            if(dat(i1,k3).lt.dat(i2,k3)) cj7=idat(i1,k3)
+            cj1=cval(dat(j2,k1),dat(j1,k1),
+     #         idat(j2,k1),idat(j1,k1))
+            cj2=cval(dat(j2,k2),dat(j1,k2),
+     #         idat(j2,k2),idat(j1,k2))
+            cj3=cval(dat(j2,k3),dat(j1,k3),
+     #         idat(j2,k3),idat(j1,k3))
+            cj4=cval(dat(i2,k2),dat(i1,k2),
+     #         idat(i2,k2),idat(i1,k2))
+            cj5=cval(dat(i2,k3),dat(i1,k3),
+     #         idat(i2,k3),idat(i1,k3))
+            cj6=cval(dat(i1,k2),dat(i2,k2),
+     #         idat(i1,k2),idat(i2,k2))
+            cj7=cval(dat(i1,k3),dat(i2,k3),
+     #         idat(i1,k3),idat(i2,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
-            cj1=- idat(i2,k1)
-            if(dat(j2,k1).lt.dat(i2,k1)) cj1=idat(j2,k1)
-            cj2=- idat(i2,k2)
-            if(dat(j2,k2).lt.dat(i2,k2)) cj2=idat(j2,k2)
-            cj3=- idat(i2,k3)
-            if(dat(j2,k3).lt.dat(i2,k3)) cj3=idat(j2,k3)
-            cj4=- idat(j1,k2)
-            if(dat(i1,k2).lt.dat(j1,k2)) cj4=idat(i1,k2)
-            cj5=- idat(j1,k3)
-            if(dat(i1,k3).lt.dat(j1,k3)) cj5=idat(i1,k3)
-            cj6=- idat(i1,k2)
-            if(dat(j1,k2).lt.dat(i1,k2)) cj6=idat(j1,k2)
-            cj7=- idat(i1,k3)
-            if(dat(j1,k3).lt.dat(i1,k3)) cj7=idat(j1,k3)
+            cj1=cval(dat(j2,k1),dat(i2,k1),
+     #         idat(j2,k1),idat(i2,k1))
+            cj2=cval(dat(j2,k2),dat(i2,k2),
+     #         idat(j2,k2),idat(i2,k2))
+            cj3=cval(dat(j2,k3),dat(i2,k3),
+     #         idat(j2,k3),idat(i2,k3))
+            cj4=cval(dat(i1,k2),dat(j1,k2),
+     #         idat(i1,k2),idat(j1,k2))
+            cj5=cval(dat(i1,k3),dat(j1,k3),
+     #         idat(i1,k3),idat(j1,k3))
+            cj6=cval(dat(j1,k2),dat(i1,k2),
+     #         idat(j1,k2),idat(i1,k2))
+            cj7=cval(dat(j1,k3),dat(i1,k3),
+     #         idat(j1,k3),idat(i1,k3))
             gtsum=gtsum+cj1*(2.0*cj2 - cj3*(cj4*cj5+cj6*cj7) )
 
        aasum(i1)=aasum(i1)+1./24.*gtsum !ADD SUMMATION OVER PERMUTATIONS
@@ -453,12 +467,22 @@ C------- COMPUTES KENDALLS TAU -------------------------------
 C-------------- H --------------------------------------------
 C------- COMPUTE VALUE FOR H (SEE FORMULA) --------------------
 
+      function cval(a,b,ia,ib)
+      real a,b
+      integer ia,ib
+
+      cval=0.0
+      if(a.lt.b) cval=ia
+      if(a.gt.b) cval=-ib
+      return
+      end
+
       function h(k,l,i,j)
       common /data/ dat(500,3),idat(500,3)
-      cj1=-idat(j,k)
-      if(dat(i,k).lt.dat(j,k)) cj1=idat(i,k)
-      cj2=-idat(j,l)
-      if(dat(i,l).lt.dat(j,l)) cj2=idat(i,l)
+      cj1=cval(dat(i,k),dat(j,k),
+     #         idat(i,k),idat(j,k))
+      cj2=cval(dat(i,l),dat(j,l),
+     #         idat(i,l),idat(j,l))
       h=cj1*cj2
       return
       end

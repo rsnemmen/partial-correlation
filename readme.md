@@ -35,7 +35,12 @@ For an automated regression test, build the executable and run it against the bu
 make test
 ```
 
-This runs a shell-based regression check against `data/test01.dat`, using `data/test01.txt` as the reference transcript. It compares the stable scientific outputs with numeric tolerances instead of diffing the entire stdout transcript.
+This runs two shell-based regression checks:
+
+- the bundled sample fixture in `data/test01.dat`, compared against `data/test01.txt`
+- the Merloni et al. (2003) Table 1 dump in `data/merloni2003.dat`, normalized on the fly and checked against the first row of that paper's Table 2 within scientific tolerances
+
+The Merloni regression uses `tests/prepare_merloni2003_row1.py` to strip repeated headers and notes, convert the raw table into the six-column `cens_tau` format for `(Log L_R, Log L_X, Log10 D)`, and verify that the result is stable even if rows sharing the same distance are reordered.
 
 If you only want the stable summary lines from a live sample run, use:
 
