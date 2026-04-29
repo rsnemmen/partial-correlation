@@ -31,6 +31,7 @@ def test_python_cli_matches_sample_reference_output() -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert completed.stderr == ''
+    assert 'Calculating variance...this takes some time....' not in completed.stdout
 
     reference_text = REFERENCE.read_text(encoding='utf-8')
 

@@ -152,8 +152,6 @@ def format_report(path: str | Path, result: PartialKendallResult) -> str:
         f' Tau(2,3): {result.tau_23: .9f}',
         f' --> Partial Kendalls tau: {result.partial_tau: .9f}',
         '',
-        ' Calculating variance...this takes some time....',
-        '',
         f' Square root of variance (sigma): {result.sigma: .8E}',
         '',
     ]
