@@ -29,6 +29,8 @@ Common commands:
 | `make` | Build `./cens_tau` |
 | `make sample` | Run the bundled sample fixture in `data/test01.dat` |
 | `make summary` | Print only the stable summary lines from the sample run |
+| `make python-sample` | Run the Python CLI on `data/test01.dat` |
+| `make python-summary` | Print only the stable Python summary lines |
 | `make test` | Run the regression checks |
 | `make gendata` | Regenerate `data/test01.dat` with synthetic data |
 | `./make.sh` | Legacy build wrapper; still supported |
@@ -44,6 +46,47 @@ If you want the full sample output instead:
 
 ```sh
 make sample
+```
+
+## Python library and CLI
+
+The repository now also includes a NumPy/SciPy-backed Python port under `partial_correlation/`.
+
+You need Python plus the `numpy` and `scipy` packages to use it.
+
+### Run the Python CLI
+
+```sh
+python -m partial_correlation data/test01.dat
+```
+
+or, if you want behavior closer to the Fortran executable, pipe the path on standard input:
+
+```sh
+printf '%s\n' 'data/test01.dat' | python -m partial_correlation
+```
+
+For the stable summary lines only:
+
+```sh
+make python-summary
+```
+
+### Use the library API
+
+```python
+from partial_correlation import partial_kendall_tau_from_file
+
+result = partial_kendall_tau_from_file("data/test01.dat")
+print(result.partial_tau, result.sigma, result.null_hypothesis_probability)
+```
+
+If your data are already in memory, use the array-based entry point:
+
+```python
+from partial_correlation import partial_kendall_tau
+
+result = partial_kendall_tau(x, cens_x, y, cens_y, z, cens_z)
 ```
 
 ## Walkthrough: run the test on your own data
@@ -143,10 +186,12 @@ printf '%s\n' 'path/to/your-data.dat' | ./cens_tau | grep -E 'Tau\(|Partial Kend
 
 ## Regression checks and fixtures
 
-`make test` currently runs two checks:
+`make test` currently runs four checks:
 
 1. the bundled fixture `data/test01.dat`, compared against `data/test01.txt`
 2. a normalized fixture derived from `data/merloni2003.dat`, checked against the repository's current fiducial output for the first Table 2 setup
+3. the Python CLI against the bundled and normalized fixtures
+4. the Python library entry points against the bundled sample fixture
 
 If you only want to inspect the stable summary values from the bundled sample fixture:
 
