@@ -54,6 +54,11 @@ col1 col2 col3 col4 col5 col6
 - Y: dependent variable 
 - Z: test variable
 - censX, censY, censZ: integer which is 1 if X/Y/Z is a detection or 0 if it is an upper limit
+- the program expects exactly these six whitespace-delimited fields per row
+- no header row, comment lines, or extra trailing columns are supported
+- files with malformed rows, invalid censor flags, or zero data rows now stop immediately with an error message
+- the program requires at least 4 data rows to compute the reported variance and significance
+- the current storage limit is 500 rows
 
 The following python snippet can be useful. Suppose you have all variables each stored in a numpy array. To create an ASCII file with the appropriate structure to be processed by `cens_tau`, issue the following command:
 

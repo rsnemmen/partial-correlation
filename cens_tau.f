@@ -30,7 +30,10 @@ c	  account the effect of z)
       common /data/ dat(500,3),idat(500,3)
       common ntot
       common /kx/ k1,k2,k3
-      character infile*50      
+      character infile*256     
+      character dataline*256   
+      real x1,x2,x3
+      integer ic1,ic2,ic3,ios
 
 C-------------------------------------------------------------
 C  INPUT DATA FILE CALLED 'DATA'.
@@ -48,9 +51,19 @@ c      write(*,*) ' x, y and z are the the independent, dependent'
 c      write(*,*) '     and test variable, respectively.'
 c      write(*,*) '     cx, cy and cz denote censoring with'
 c      write(*,*) '     1=detection, 0=upper limit.'
-      read(*,*) infile
+      infile=' '
+      read(*,'(A)',iostat=ios) infile
+      if(ios.ne.0 .or. infile.eq.' ') then
+        write(6,*) 'ERROR: no input filename was provided.'
+        stop 1
+      endif
 c N <--
-      open(10,file=infile,status='old')
+      open(10,file=infile,status='old',iostat=ios)
+      if(ios.ne.0) then
+        write(6,*) 'ERROR: could not open input file:'
+        write(6,*) infile
+        stop 1
+      endif
 
 C-------------------------------------------------
 C READ IN DATA:
@@ -61,17 +74,53 @@ C                 UPPER LIMIT --> IDAT(I,K)=0
 C--------------------------------------------------
  
       i=1
-c1     read(10,110,end=99) dat(i,1),idat(i,1),dat(i,2),
-c     #     idat(i,2),dat(i,3),idat(i,3)
-1     read(10,*,end=99) dat(i,1),idat(i,1),dat(i,2),
-     #     idat(i,2),dat(i,3),idat(i,3)
-c110   format(3(f10.4,1x,i2,1x))
-      dat(i,1)=-dat(i,1)     ! CHANGE TO RIGHT CENSORING
-      dat(i,2)=-dat(i,2)     ! CHANGE TO RIGHT CENSORING
-      dat(i,3)=-dat(i,3)     ! CHANGE TO RIGHT CENSORING
+1     read(10,'(A)',iostat=ios) dataline
+      if(ios.lt.0) goto 99
+      if(ios.gt.0) then
+        write(6,*) 'ERROR: invalid data row ',i
+        write(6,*) 'Expected: X censX Y censY Z censZ'
+        stop 1
+      endif
+      if(nfields(dataline).ne.6) then
+        write(6,*) 'ERROR: invalid data row ',i
+        write(6,*) 'Expected: X censX Y censY Z censZ'
+        stop 1
+      endif
+      read(dataline,*,iostat=ios) x1,ic1,x2,ic2,x3,ic3
+      if(ios.ne.0) then
+        write(6,*) 'ERROR: invalid data row ',i
+        write(6,*) 'Expected: X censX Y censY Z censZ'
+        stop 1
+      endif
+      if(i.gt.500) then
+        write(6,*) 'ERROR: input has more than 500 rows.'
+        stop 1
+      endif
+      if((ic1.ne.0 .and. ic1.ne.1) .or.
+     #   (ic2.ne.0 .and. ic2.ne.1) .or.
+     #   (ic3.ne.0 .and. ic3.ne.1)) then
+        write(6,*) 'ERROR: censor flags must be 0 or 1.'
+        write(6,*) 'Invalid flag on row ',i
+        stop 1
+      endif
+      dat(i,1)=-x1          ! CHANGE TO RIGHT CENSORING
+      idat(i,1)=ic1
+      dat(i,2)=-x2          ! CHANGE TO RIGHT CENSORING
+      idat(i,2)=ic2
+      dat(i,3)=-x3          ! CHANGE TO RIGHT CENSORING
+      idat(i,3)=ic3
       i=i+1
       goto 1
 99    ntot=i-1
+      close(10)
+      if(ntot.le.0) then
+        write(6,*) 'ERROR: input file is empty.'
+        stop 1
+      endif
+      if(ntot.le.3) then
+        write(6,*) 'ERROR: at least 4 rows are required.'
+        stop 1
+      endif
 
       k1=1       ! INDEPENDENT VARIABLE = 1.COL OF DAT
       k2=2       ! DEPENDENT VARIABLE   = 2.COL OF DAT
@@ -114,6 +163,25 @@ c N <--
 C------------------------------------------------------
 C-------- SUBROUTINES AND FUNCTIONS -------------------
 C------------------------------------------------------
+
+      integer function nfields(line)
+      character*(*) line
+      logical intok
+
+      nfields=0
+      intok=.false.
+      do 5 i=1,len(line)
+        if(line(i:i).ne.' ' .and. line(i:i).ne.char(9)) then
+          if(.not.intok) then
+            nfields=nfields+1
+            intok=.true.
+          endif
+        else
+          intok=.false.
+        endif
+ 5    continue
+      return
+      end
 
 C------------ TAU123 ---------------------------------
 C-------- PARTIAL KENDALLS TAU -----------------------
