@@ -238,5 +238,5 @@ This overwrites `data/test01.dat`.
 
 If you use this code in published work, please cite the following papers:
 
-- [Akritas & Siebert (1996), *A test for partial correlation with censored astronomical data*](https://ui.adsabs.harvard.edu/abs/1996MNRAS.278..919A/abstract)
-- [Nemmen et al. (2012), *Science*, 338, 1445](http://labs.adsabs.harvard.edu/adsabs/abs/2012Sci...338.1445N/)
+- [Akritas & Siebert (1996), *A test for partial correlation with censored astronomical data*](https://ui.adsabs.harvard.edu/abs/1996MNRAS.278..919A/abstract). The paper that proposed the method.
+- [Nemmen et al. (2012), *Science*, 338, 1445](http://labs.adsabs.harvard.edu/adsabs/abs/2012Sci...338.1445N/). An application by the person who modernized the codebase.
